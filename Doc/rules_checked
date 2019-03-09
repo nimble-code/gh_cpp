@@ -1,0 +1,76 @@
+2	2	"C++ style comment"
+2	3	"nested /* comment"
+
+4	1	"undefined escape sequence"
+4	2	"using trigraph"
+
+7	1	"octal constant or escape sequence"
+
+14	4	"using goto"
+14	5	"using continue"
+
+16	1	"using elipsis"
+
+18	4	"using union"
+
+19	1	"#include preceded by code"
+19	3	"#include needing preprocessing"
+19	4	"unbalanced use of braces in macro body"
+19	4	"semi-colon at end of macro body"
+19	4	"possibly non-compliant macro type"
+19	5	"#define or #undef within block scope"
+19	6	"#undef"
+19	7	"function-like macro iso function"
+19	8	"macro call with insufficient arguments"
+19	9	"macro argument matches directive name"
+19	10	"formal param not enclosed in ()"
+19	11	"undefined macro name"
+19	12	"more than one # or ## in macro"
+19	13	"# or ## in macro"
+19	14	"malformed defined"
+19	15	"include file processed twice"
+19	16	"macro call with insufficient arguments"
+19	17	"unbalanced #if/#ifdef/#else/#elif/#endif directives"
+
+20	4	"<malloc.h>"
+20	5	"errno"
+20	6	"offsetof"
+20	7	"setjmp"
+20	8	"<signal.h>"
+20	9	"<stdio.h>"
+20	10	"using atof/atoi/atol"
+20	11	"using abort/exit/getenv/system"
+20	12	"<time.h>"
+
+Certain names should never appear (outside strings and comments):
+	goto, continue, union
+	errno, offsetof, setjmp, atof, atoi, atol, abort, exit, getenv, system
+	#undef
+
+Certain token sequences should never appear (outside strings and comments):
+	..., //
+	\ followed by any other char than " \ ' n a f b r t v x X
+	\ followed by 0
+	?? followed by =, (, ), /, ', <, >, !, -
+	# followed by "include" followed by "<malloc.h>", "<signal.h>", "<stdio.h>",, "<time.h>"
+
+Certain token sequences should never appear in a given context
+	/* in between /* and */
+	#define or #undef in between { and }
+	# or ## between #define and newline
+	# after # between #define and newline
+	## after ## between #define and newline
+	; before #include
+	#include followed by anything other than a string
+	defined followed by anything other than a name or ( name )
+	#define followed by ; preceding newline
+
+	directive name in macro arguments
+	non macro-name between #if or #elif and newline
+	unbalanced use of braces in macro body
+	possibly non-compliant macro type
+	macro call with insufficient arguments
+	formal param not enclosed in ()
+	include file processed twice
+	macro call with insufficient arguments
+	unbalanced #if/#ifdef/#else/#elif/#endif directives
