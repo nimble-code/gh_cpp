@@ -16,7 +16,7 @@ int	stack_depth;
 extern int	verbose, lineno, level, incomment, sawcode;
 extern int	no_includes, misra_rules, main_only;
 extern int	not_printing[MAXLEVEL];
-extern char	*now, *filename;
+extern char	*nowc, *filename;
 
 extern void	fatal_error(char *s);	/* gh_cpp1.c */
 extern char	*emalloc(int);		/* gh_cpp1.c */
@@ -169,21 +169,21 @@ do_include(int ln, char *from)
 	skipwhite();
 	sawcode = 0;
 
-	if (*now == '"')
-	{	now++;
-		p = strchr(now, '"');
+	if (*nowc == '"')
+	{	nowc++;
+		p = strchr(nowc, '"');
 		if (!p) fatal_error("syntax error in directive");
 		*p = '\0';
 
 		if ((q = strrchr(filename, '/')) != NULL
-		&&   strrchr(now, '/') == NULL)	/* new 3/24/05 */
-		{	/* prepend directory to name in now */
+		&&   strrchr(nowc, '/') == NULL)	/* new 3/24/05 */
+		{	/* prepend directory to name in nowc */
 			*q = '\0';
-			s = (char *) emalloc(strlen(filename)+strlen(now)+1+1);
-			sprintf(s, "%s/%s", filename, now);
+			s = (char *) emalloc(strlen(filename)+strlen(nowc)+1+1);
+			sprintf(s, "%s/%s", filename, nowc);
 			*q = '/';
 		} else
-			s = next_file(now);
+			s = next_file(nowc);
 
 		if ((tfd = fopen(s, "r")) != NULL)
 		{	fclose(tfd);
@@ -191,7 +191,7 @@ do_include(int ln, char *from)
 			do_file(from, lineno, s);
 		} else
 		{	if (q != NULL)
-				s = next_file(now); /* revert */
+				s = next_file(nowc); /* revert */
 			if (!search_sys(sysdirs, s))
 			{	if (!not_printing[level])
 				fprintf(stderr, "%s,%d: cannot find include file %s\n",
@@ -200,15 +200,15 @@ do_include(int ln, char *from)
 				return -1;
 		}	}
 		*p = '"';
-	} else if (*now == '<')
-	{	now++;
-		p = strchr(now, '>');
+	} else if (*nowc == '<')
+	{	nowc++;
+		p = strchr(nowc, '>');
 		if (!p) fatal_error("syntax error in directive");
 		*p = '\0';
-		if (!search_sys(sysdirs, now))
+		if (!search_sys(sysdirs, nowc))
 		{	if (!not_printing[level])
 			fprintf(stderr, "%s,%d: cannot find include file %s\n",
-				filename, lineno, now);
+				filename, lineno, nowc);
 			*p = '>';
 			return -1;
 		}
@@ -243,7 +243,7 @@ do_file(char *from, int ln, char *to)
 
 	while (fgets(ibuf, MAXIN, mfd) != NULL)
 	{	lineno += 1+delta; delta = 0;
-		now = ibuf;
+		nowc = ibuf;
 
 		len = trimline(ibuf);
 		while (len > 1 && ibuf[len-2] == '\\')	/* one before newline */
@@ -263,12 +263,12 @@ do_file(char *from, int ln, char *to)
 		}
 
 		skipwhite();
-		if (!no_includes && *now++ == '#')
+		if (!no_includes && *nowc++ == '#')
 		{	skipwhite();
-			if (strncmp(now, "include", strlen("include")) == 0
-			&&  ((*(now+strlen("include")) == ' ')
-			||   (*(now+strlen("include")) == '\t')))
-			{	now += strlen("include");
+			if (strncmp(nowc, "include", strlen("include")) == 0
+			&&  ((*(nowc+strlen("include")) == ' ')
+			||   (*(nowc+strlen("include")) == '\t')))
+			{	nowc += strlen("include");
 				if (do_include(ln, to) != 0)	/* can call do_file recursively */
 					continue;
 		}	}

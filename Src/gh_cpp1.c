@@ -34,7 +34,7 @@ static char *predefs[] = {
 };
 
 char	*filename = "<predef>";
-char	*now, mychar, *myname;	/* values returned by lexer */
+char	*nowc, mychar, *myname;	/* values returned by lexer */
 
 int	verbose, no_includes, misra_rules, debugging;
 int	lineno, white, sawcode, incomment, main_only;
@@ -141,12 +141,12 @@ void
 skipwhite(void)
 {
 	white = 0;
-	while (*now == ' ' || *now == '\t')
-	{	if (*now == ' ')
+	while (*nowc == ' ' || *nowc == '\t')
+	{	if (*nowc == ' ')
 			white++;
 		else
-			white += 8-((now - lbuf + white)%8);
-		now++;
+			white += 8-((nowc - lbuf + white)%8);
+		nowc++;
 	}
 }
 
@@ -186,15 +186,15 @@ is_predefined(char *q)
 static void
 get_digit(void)
 {
-	if (*now == '0'
-	&& (*(now+1) == 'x' || *(now+1) == 'X'))
-	{	now += 2;
+	if (*nowc == '0'
+	&& (*(nowc+1) == 'x' || *(nowc+1) == 'X'))
+	{	nowc += 2;
 		myval = 0;
-		while (isdigit(*now)
-		|| (*now >= 'a' && *now <= 'f')
-		|| (*now >= 'A' && *now <= 'F'))
-		{	myval = 16*myval + *now;
-			switch (*now) {
+		while (isdigit(*nowc)
+		|| (*nowc >= 'a' && *nowc <= 'f')
+		|| (*nowc >= 'A' && *nowc <= 'F'))
+		{	myval = 16*myval + *nowc;
+			switch (*nowc) {
 			case '0': case '1': case '2':
 			case '3': case '4': case '5':
 			case '6': case '7': case '8':
@@ -210,33 +210,33 @@ get_digit(void)
 				myval -= 'A' + 10;
 				break;
 			}
-			now++;
+			nowc++;
 		}
 	} else
-	{	myval = atoi(now);
-		while (isdigit(*now))
-			now++;
+	{	myval = atoi(nowc);
+		while (isdigit(*nowc))
+			nowc++;
 	}
-	while (*now == 'L' || *now == 'l'
-	    || *now == 'U' || *now == 'u')
-		now++;	/* 8989L 999U */
+	while (*nowc == 'L' || *nowc == 'l'
+	    || *nowc == 'U' || *nowc == 'u')
+		nowc++;	/* 8989L 999U */
 }
 
 static void
 lookfor(char c)
 {
-	for ( ; *now != c; now++)
-	{	if (*now == '\0')
+	for ( ; *nowc != c; nowc++)
+	{	if (*nowc == '\0')
 		{	if (!not_printing[level])
 			fprintf(stderr, "%s,%d: unterminated string\n",
 				filename, lineno);
-			now--;
+			nowc--;
 			break;
 		}
-		if (*now == '\\')
-			now++;
+		if (*nowc == '\\')
+			nowc++;
 	}
-	now++;
+	nowc++;
 }
 
 static void
@@ -244,19 +244,19 @@ digraphs(void)
 {
 	switch (mychar) {
 	case '<':
-		switch (*now) {
-		case ':': now++; mychar = '['; break;
-		case '%': now++; mychar = '{'; break;
+		switch (*nowc) {
+		case ':': nowc++; mychar = '['; break;
+		case '%': nowc++; mychar = '{'; break;
 		default:  break;
 		}
 		break;
 	case ':':
-		if (*now == '>') { now++; mychar = ']'; break; }
+		if (*nowc == '>') { nowc++; mychar = ']'; break; }
 		break;
 	case '%':
-		switch (*now) {
-		case '>': now++; mychar = '}'; break;
-		case ':': now++; mychar = '#'; break;
+		switch (*nowc) {
+		case '>': nowc++; mychar = '}'; break;
+		case ':': nowc++; mychar = '#'; break;
 		default: break;
 		} /* fall thru */
 	default:
@@ -267,18 +267,18 @@ digraphs(void)
 static void
 trigraphs(void)
 {
-	if (mychar != '?' || *now != '?') return;
+	if (mychar != '?' || *nowc != '?') return;
 
-	switch (*(now+1)) {
-	case '=':  now += 2; mychar = '#'; break;
-	case '(':  now += 2; mychar = '['; break;
-	case ')':  now += 2; mychar = ']'; break;
-	case '<':  now += 2; mychar = '{'; break;
-	case '>':  now += 2; mychar = '}'; break;
-	case '/':  now += 2; mychar = '\\'; break;
-	case '\'': now += 2; mychar = '^'; break;
-	case '!':  now += 2; mychar = '|'; break;
-	case '-':  now += 2; mychar = '~'; break;
+	switch (*(nowc+1)) {
+	case '=':  nowc += 2; mychar = '#'; break;
+	case '(':  nowc += 2; mychar = '['; break;
+	case ')':  nowc += 2; mychar = ']'; break;
+	case '<':  nowc += 2; mychar = '{'; break;
+	case '>':  nowc += 2; mychar = '}'; break;
+	case '/':  nowc += 2; mychar = '\\'; break;
+	case '\'': nowc += 2; mychar = '^'; break;
+	case '!':  nowc += 2; mychar = '|'; break;
+	case '-':  nowc += 2; mychar = '~'; break;
 	default:   return;
 	}
 
@@ -290,12 +290,12 @@ rule_check(void)
 {
 	if (!misra_rules) return;
 
-	if (*now == '0' && isdigit(*(now+1)))
+	if (*nowc == '0' && isdigit(*(nowc+1)))
 		m_rule(7, 1, "octal constant or escape sequence");
 
-	if (*now != '\\') return;
+	if (*nowc != '\\') return;
 
-	switch (*(now+1)) {
+	switch (*(nowc+1)) {
 	case '0': break;
 	case '1': case '2':
 	case '3': case '4': case '5':
@@ -341,20 +341,20 @@ lex(void)
 
 	skipwhite();
 
-	if (*now == '\n'
-	||  *now == '\r'
-	||  *now == '\0')
+	if (*nowc == '\n'
+	||  *nowc == '\r'
+	||  *nowc == '\0')
 		return DONE;
 
-	if (isalpha(*now) || *now == '_')
-	{	q = now++;
-		while (isalnum(*now) || *now == '_' || *now == '-')
-			now++;
-same:		c = *now;
-		*now = '\0';
+	if (isalpha(*nowc) || *nowc == '_')
+	{	q = nowc++;
+		while (isalnum(*nowc) || *nowc == '_' || *nowc == '-')
+			nowc++;
+same:		c = *nowc;
+		*nowc = '\0';
 		myname = emalloc(strlen(q) + 1);
 		strcpy(myname, q);
-		*now = c;
+		*nowc = c;
 
 		if (misra_rules)
 		for (c = 0; m_patterns[c].nm != NULL; c++)
@@ -364,34 +364,34 @@ same:		c = *now;
 		return NAME;
 	}
 
-	if (strncmp(now, "...", 3) == 0)
-	{	now += 3;
+	if (strncmp(nowc, "...", 3) == 0)
+	{	nowc += 3;
 		myname = "...";
 		if (misra_rules) m_rule(16, 1, "elipsis");
 
 		return NAME;
 	}
 
-	if (isdigit(*now))
+	if (isdigit(*nowc))
 	{	get_digit();	/* result is in myval */
 		return VAL;
 	}
 	
-	mychar = *now++;
+	mychar = *nowc++;
 	if (mychar == '\\')
-	{	mychar = *now++;
+	{	mychar = *nowc++;
 		return ECHAR;
 	}
 
 	if (mychar == '"')	/* string */
-	{	q = now - 1;
+	{	q = nowc - 1;
 		lookfor('"');
 		goto same;	/* store as NAME */
 	}
 
 	if (mychar == '\'')	/* char constant */
 	{	rule_check();
-		q = now - 1;
+		q = nowc - 1;
 		lookfor('\'');
 		goto same;	/* store as as NAME */
 	}
@@ -1348,7 +1348,7 @@ do_parsing(void)
 {	Tokvals t;
 	TS *n;
 
-	now = lbuf;
+	nowc = lbuf;
 	strip_comments();
 
 	while ((t = lex()) != DONE)
@@ -1959,10 +1959,10 @@ cpy_orig(TS *or)
 #define throughout(x,y,z)	1
 #else
 static int
-throughout(TS *s, TS *last, MD *m)
+throughout(TS *s, TS *tlast, MD *m)
 {	ML *mp;
 
-	if (!s || s == last) return 1;
+	if (!s || s == tlast) return 1;
 
 	for (mp = s->ml; mp; mp = mp->nxt)
 		if (mp->m == m)
@@ -1970,17 +1970,17 @@ throughout(TS *s, TS *last, MD *m)
 
 	if (!mp) return 0;
 
-	return throughout(s->nxt, last, m);
+	return throughout(s->nxt, tlast, m);
 }
 #endif
 
 static void
-inherit_tags(TS *s, TS *last, TS *ni)
+inherit_tags(TS *s, TS *tlast, TS *ni)
 {	ML *mp;
 
 	for (mp = s->ml; mp; mp = mp->nxt)
-		if (s == last
-		||  throughout(s->nxt, last, mp->m))
+		if (s == tlast
+		||  throughout(s->nxt, tlast, mp->m))
 		{	add_tag(ni, mp->m);
 			if (debugging)
 			{	nested("");
@@ -2189,7 +2189,7 @@ preprocess(void)
 
 	if (d == -1 && !no_includes)					/* unrecognized include */
 	{	prep_line(start->nxt->nxt);
-		now = lbuf;
+		nowc = lbuf;
 		d = do_include(lineno, filename);	/* post macro expansion */
 		if (d == 0)	/* 0= not recognized, -1 failed, 1 ok */
 		fprintf(stderr, "%s,%d: warning: unrecognized include directive\n",
@@ -2204,7 +2204,7 @@ preprocess(void)
 	}
 }
 
-char *cnf[] = {			/* macros generated in makefile from cpp -dM */
+char *cnfm[] = {			/* macros generated in makefile from cpp -dM */
 	#include "configure.h"	/* violation of rule 19.1, include preceded by code */
 	NULL,
 };
@@ -2213,8 +2213,8 @@ void
 preconfigure(void)
 {	int i;
 
-	for (i = 0; cnf[i] != NULL; i++)
-	{	strcpy(ibuf, cnf[i]);
+	for (i = 0; cnfm[i] != NULL; i++)
+	{	strcpy(ibuf, cnfm[i]);
 		preprocess();
 	}
 }

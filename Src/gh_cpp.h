@@ -1,3 +1,6 @@
+#ifndef GHCPP_H
+#define GHCPP_H
+
 typedef enum {	DONE, NAME, CHAR, ECHAR, VAL,
 		ARG, ARGSTRING, PLAINSTRING,
 		TIMES, DIVIDE, MOD, PLUS, MINUS,	/* gh_cpp3.c */
@@ -57,3 +60,5 @@ struct Stack {	/* evaluation stack for #if expressions */
 #define MAXIN		4096	/* max size of a line before expansion */
 #define MAXSTACK	256	/* max depth of eval stack for if expr */
 #define MAXLEVEL	256	/* nesting of if/endif pairs */
+
+#endif

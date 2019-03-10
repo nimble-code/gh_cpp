@@ -424,7 +424,7 @@ eval_expr(TS *p)
 	||  !p->nxt
 	||   p->tok != CHAR
 	||   p->val != '#'
-	||  !p->nxt->tok == NAME
+	||  !(p->nxt->tok == NAME)
 	|| (strcmp(p->nxt->name, "if") != 0
 	&&  strcmp(p->nxt->name, "elif") != 0))
 		fatal_error("cannot happen, eval_expr");
